@@ -1,25 +1,19 @@
 package com.ggit.simulation;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class WorldMap extends AbstractWorldMap {
-    private List<Animal> animals;
-    private List<Plant> plants;
+    private Map<Vector2D, Plant> plants;
+    private AnimalsMapping animals;
     private static final int noOfPlants = 50;
     private static final int noOfAnimals = 15;
     private static final Random random = new Random();
+
     public WorldMap(int width, int height) {
         super(width, height);
-        animals = new LinkedList<>();
-        for (int i = 0; i < noOfAnimals; i++) addAnimal();
-        plants = new LinkedList<>();
+        plants = new HashMap<>();
         for (int i = 0; i < noOfPlants; i++) addPlant();
-    }
-
-    private void addAnimal() {
-        animals.add(new Animal(getRandomPosition()));
+        animals = new AnimalsMapping();
     }
 
     private void addPlant() {
@@ -27,37 +21,61 @@ public class WorldMap extends AbstractWorldMap {
 
         Vector2D position = getRandomPosition();
         while (isOccupiedByPlant(position)) position = getRandomPosition();
-        plants.add(new Plant(position));
+        plants.put(position, new Plant(position));
     }
 
     private boolean isOccupiedByPlant(Vector2D position) {
-        for (Plant plant : plants) {
-            if (plant.getPosition().equals(position)) return true;
-        }
-        return false;
+        return plants.containsKey(position);
     }
 
     private Vector2D getRandomPosition() {
         return new Vector2D(random.nextInt(width), random.nextInt(height));
     }
+
     @Override
     public void run() {
-        MapDirection[] directions = MapDirection.values();
-        for (Animal animal : animals) {
-            animal.move(directions[random.nextInt(directions.length)]);
-        }
+        animals.moveAnimals();
     }
 
     @Override
     public void eat() {
-        for (Animal animal : animals) {
-            for (Plant plant : plants) {
-                if (animal.getPosition().equals(plant.getPosition())) {
-                    System.out.println(String.format("Zwierzę %s zjadło roślinę", animal.getId()));
-                    plants.remove(plant);
-                    addPlant();
-                    break;
-                }
+        for (Animal animal : animals.list) {
+            if (isOccupiedByPlant(animal.getPosition())) {
+                System.out.println(String.format("Zwierzę %s zjadło roślinę", animal.getId()));
+                plants.remove(animal.getPosition());
+                addPlant();
+            }
+        }
+    }
+
+    private class AnimalsMapping {
+        List<Animal> list;
+        Map<Vector2D, List<Animal>> mapping;
+
+        AnimalsMapping() {
+            list = new LinkedList<>();
+            mapping = new HashMap<>();
+            for (int i = 0; i < noOfAnimals; i++) addAnimal();
+        }
+
+        void addAnimal() {
+            Animal animal = new Animal(getRandomPosition());
+            placeAnimalOnMap(animal);
+            list.add(animal);
+        }
+
+        void placeAnimalOnMap(Animal animal) {
+            List<Animal> animalsOnPosition = mapping.get(animal.getPosition());
+            if (animalsOnPosition == null) mapping.put(animal.getPosition(), new LinkedList<>(List.of(animal)));
+            else animalsOnPosition.add(animal);
+        }
+
+        void moveAnimals() {
+            mapping.clear();
+            MapDirection[] directions = MapDirection.values();
+            for (Animal animal : list) {
+                animal.move(directions[random.nextInt(directions.length)]);
+                placeAnimalOnMap(animal);
             }
         }
     }
