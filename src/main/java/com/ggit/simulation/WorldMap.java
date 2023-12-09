@@ -3,10 +3,13 @@ package com.ggit.simulation;
 import java.util.*;
 
 public class WorldMap extends AbstractWorldMap {
+    private int dayNumber = 1;
     private Map<Vector2D, Plant> plants;
     private AnimalsMapping animals;
     private static final int noOfPlants = 50;
     private static final int noOfAnimals = 15;
+    private static final int animalEnergy = 50;
+    private static final int plantEnergy = 10;
     private static final Random random = new Random();
 
     public WorldMap(int width, int height) {
@@ -39,13 +42,19 @@ public class WorldMap extends AbstractWorldMap {
 
     @Override
     public void eat() {
-        for (Animal animal : animals.list) {
+        animals.list.forEach(animal -> {
             if (isOccupiedByPlant(animal.getPosition())) {
                 System.out.println(String.format("Zwierzę %s zjadło roślinę", animal.getId()));
+                animal.withChangedEnergy(animal.getEnergy() + plantEnergy);
                 plants.remove(animal.getPosition());
                 addPlant();
             }
-        }
+        });
+    }
+
+    @Override
+    public void startDay() {
+        System.out.println("Nowy dzień numer " + dayNumber);
     }
 
     private class AnimalsMapping {
@@ -59,24 +68,22 @@ public class WorldMap extends AbstractWorldMap {
         }
 
         void addAnimal() {
-            Animal animal = new Animal(getRandomPosition());
+            Animal animal = new Animal(getRandomPosition(), animalEnergy);
             placeAnimalOnMap(animal);
             list.add(animal);
         }
 
         void placeAnimalOnMap(Animal animal) {
-            List<Animal> animalsOnPosition = mapping.get(animal.getPosition());
-            if (animalsOnPosition == null) mapping.put(animal.getPosition(), new LinkedList<>(List.of(animal)));
-            else animalsOnPosition.add(animal);
+            mapping.computeIfAbsent(animal.getPosition(), pos -> new LinkedList<>()).add(animal);
         }
 
         void moveAnimals() {
             mapping.clear();
             MapDirection[] directions = MapDirection.values();
-            for (Animal animal : list) {
+            list.forEach(animal -> {
                 animal.move(directions[random.nextInt(directions.length)]);
                 placeAnimalOnMap(animal);
-            }
+            });
         }
     }
 }

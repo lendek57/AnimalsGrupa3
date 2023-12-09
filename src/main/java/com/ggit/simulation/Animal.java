@@ -3,11 +3,33 @@ package com.ggit.simulation;
 public class Animal {
     private Vector2D position;
     private int id;
+    private int energy;
+    private int age;
     private static int counter = 0;
 
-    public Animal(Vector2D position) {
+    public Animal(Vector2D position, int energy) {
         this.position = position;
+        this.energy = energy;
+        age = 1;
         id = counter++;
+    }
+
+    public int getEnergy() {
+        return energy;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public Animal dayOlder() {
+        age++;
+        return this;
+    }
+
+    public Animal withChangedEnergy(int newEnergy) {
+        energy = newEnergy;
+        return this;
     }
 
     public int getId() {
