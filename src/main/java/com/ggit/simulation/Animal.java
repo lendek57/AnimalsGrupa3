@@ -2,16 +2,39 @@ package com.ggit.simulation;
 
 public class Animal implements Comparable<Animal> {
     private Vector2D position;
-    private int id;
+    private final int id = counter++;
     private int energy;
-    private int age;
+    private int age = 1;
+    private int numberOfChildren = 0;
+    private final Genome genome;
     private static int counter = 0;
 
     public Animal(Vector2D position, int energy) {
         this.position = position;
         this.energy = energy;
-        age = 1;
-        id = counter++;
+        genome = new Genome();
+    }
+
+    public Animal(Animal mother, Animal father) {
+        position = pbc(mother.getPosition().add(MapDirection.getRandomDirection().getUnitVector()));
+        energy = (mother.getEnergy() + father.getEnergy()) / 4;
+        mother.withChangedEnergy(mother.getEnergy() * 3 / 4);
+        father.withChangedEnergy(father.getEnergy() * 3 / 4);
+        genome = new Genome(mother.getGenome(), father.getGenome());
+        mother.increaseNumberOfChildren();
+        father.increaseNumberOfChildren();
+    }
+
+    public int getNumberOfChildren() {
+        return numberOfChildren;
+    }
+
+    public void increaseNumberOfChildren() {
+        numberOfChildren++;
+    }
+
+    public Genome getGenome() {
+        return genome;
     }
 
     public int getEnergy() {
