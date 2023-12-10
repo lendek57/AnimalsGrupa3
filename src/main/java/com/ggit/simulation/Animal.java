@@ -1,6 +1,6 @@
 package com.ggit.simulation;
 
-public class Animal {
+public class Animal implements Comparable<Animal> {
     private Vector2D position;
     private int id;
     private int energy;
@@ -53,5 +53,10 @@ public class Animal {
         if (position.getY() < 0) return position.add(new Vector2D(0, height));
         if (position.getY() >= height) return position.subtrack(new Vector2D(0, height));
         return position;
+    }
+
+    @Override
+    public int compareTo(Animal o) {
+        return energy == o.getEnergy() ? id - o.id : energy - o.energy;
     }
 }
