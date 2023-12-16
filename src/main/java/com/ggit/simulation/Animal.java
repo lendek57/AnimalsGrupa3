@@ -68,6 +68,10 @@ public class Animal implements Comparable<Animal> {
         System.out.println("Nowa pozycja zwierzęcia: " + position);
     }
 
+    public void moveBasedOnGenome() {
+        move(genome.getRandomDirection());
+    }
+
     private Vector2D pbc(Vector2D position) {
         int width = Simulation.getWidth();
         int height = Simulation.getHeight();
